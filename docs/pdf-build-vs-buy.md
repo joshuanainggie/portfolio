@@ -4,9 +4,7 @@ description: Why I evaluated three commercial PDF form-filling services for a lo
 
 # I Priced Three PDF Vendors, Then Wrote 100 Lines of Python Instead
 
-**Subtitle:** Filling a PDF form turns out not to be document manipulation. It's assigning values to a dictionary.
-
----
+*Filling a PDF form turns out not to be document manipulation. It's assigning values to a dictionary.*
 
 Our dispatchers fill in airline shipment forms. Not now and then, but constantly, as part of every handoff to a carrier. One of those forms has 53 fields on it, and most of them are client and route details that already exist in our system. Somebody was retyping them into Acrobat by hand, several times a shift, on an operation that runs around the clock.
 
