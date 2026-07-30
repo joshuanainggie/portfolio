@@ -31,3 +31,5 @@ nav:
   - About: index.md
   - Runbooks:
       - Offboarding a Microsoft 365 user: offboarding-m365.md
+  - Articles:
+      - "Build vs. buy: PDF generation": pdf-build-vs-buy.md
