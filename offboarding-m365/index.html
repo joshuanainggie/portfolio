@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="documentation and technical writing on Microsoft 365, Azure, and automation">
+        <meta name="description" content="A sequenced Microsoft 365 offboarding runbook covering session revocation, ownership handover, and license reclamation verification.">
       
       
       
@@ -15,6 +15,8 @@
       
         <link rel="prev" href="..">
       
+      
+        <link rel="next" href="../pdf-build-vs-buy/">
       
       
         
@@ -441,10 +443,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-remove-group-memberships-and-understand-your-licensing-model" class="md-nav__link">
+  <a href="#6-remove-group-memberships-and-check-your-licensing-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Remove group memberships, and understand your licensing model
+        6. Remove group memberships and check your licensing model
       
     </span>
   </a>
@@ -485,10 +487,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-last-line-matters" class="md-nav__link">
+  <a href="#write-down-that-you-did-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The last line matters
+        Write down that you did it
       
     </span>
   </a>
@@ -499,6 +501,93 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Articles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Articles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf-build-vs-buy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build vs. buy: PDF generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -604,10 +693,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-remove-group-memberships-and-understand-your-licensing-model" class="md-nav__link">
+  <a href="#6-remove-group-memberships-and-check-your-licensing-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Remove group memberships, and understand your licensing model
+        6. Remove group memberships and check your licensing model
       
     </span>
   </a>
@@ -648,10 +737,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-last-line-matters" class="md-nav__link">
+  <a href="#write-down-that-you-did-it" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The last line matters
+        Write down that you did it
       
     </span>
   </a>
@@ -676,9 +765,9 @@
 
 
 <h1 id="offboarding-a-microsoft-365-user-without-leaving-orphans">Offboarding a Microsoft 365 User Without Leaving Orphans<a class="headerlink" href="#offboarding-a-microsoft-365-user-without-leaving-orphans" title="Permanent link">&para;</a></h1>
-<p>Deleting a Microsoft 365 user takes about four clicks. Doing it without breaking something downstream takes considerably longer, and the difference usually doesn't surface for weeks.</p>
-<p>The problem is that most offboarding guides treat the user account as the only thing being removed. In practice, an account that has been active for a year or two accumulates ownership — of automation, of groups, of sites, of a phone number, of a calendar full of recurring meetings. Delete the account and those things don't fail loudly. They fail quietly, at some later point, in a way that's hard to trace back to a departure nobody remembers.</p>
-<p>This is the sequence I use, and more usefully, the reasoning behind why the steps sit in this order.</p>
+<p>Deleting a Microsoft 365 user takes about four clicks. Doing it properly takes considerably longer, and the gap between the two usually doesn't show up for weeks.</p>
+<p>Here's the problem with most offboarding guides. They treat the user account as the only thing being removed. But an account that's been active for a year or two has accumulated ownership of things: flows, groups, a SharePoint site, a phone number, a calendar full of recurring meetings that only it can amend. Delete the account and none of that fails loudly. It fails quietly, weeks later, and by then nobody connects the broken thing to a departure they've forgotten about.</p>
+<p>So this is the sequence, and more usefully, why the steps sit in this order.</p>
 <h2 id="the-short-version">The short version<a class="headerlink" href="#the-short-version" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>[ ] Block sign-in
 [ ] Revoke active sessions
@@ -691,24 +780,24 @@
 [ ] Verify license reclamation
 [ ] Record the offboarding
 </code></pre></div>
-<p>Everything below is why each line is there.</p>
-<p>All examples use the Microsoft Graph PowerShell SDK. The older MSOnline and AzureAD modules are retired, so anything you find online using <code>Connect-MsolService</code> should be treated as out of date.</p>
+<p>Everything below explains why each line earns its place.</p>
+<p>All examples use the Microsoft Graph PowerShell SDK. If you find a guide using <code>Connect-MsolService</code>, it's out of date — the MSOnline and AzureAD modules are retired.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Connect-MgGraph</span> <span class="n">-Scopes</span> <span class="s2">&quot;User.ReadWrite.All&quot;</span><span class="p">,</span><span class="s2">&quot;Directory.ReadWrite.All&quot;</span><span class="p">,</span><span class="s2">&quot;Organization.Read.All&quot;</span>
 </code></pre></div>
 <h2 id="1-block-sign-in">1. Block sign-in<a class="headerlink" href="#1-block-sign-in" title="Permanent link">&para;</a></h2>
-<p>First action, always. It stops new authentication immediately.</p>
+<p>First action, always.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Update-MgUser</span> <span class="n">-UserId</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">-AccountEnabled</span><span class="p">:</span><span class="nv">$false</span>
 </code></pre></div>
-<p>For a planned departure this can wait until the final day. For an involuntary one it happens before the conversation, not after. Same command either way; the timing is an HR decision rather than a technical one.</p>
+<p>New authentication attempts stop immediately. For a planned departure you can run this on the last day. For an involuntary one it goes before the conversation, not after. Same command; the timing is an HR call rather than a technical one.</p>
 <h2 id="2-revoke-active-sessions">2. Revoke active sessions<a class="headerlink" href="#2-revoke-active-sessions" title="Permanent link">&para;</a></h2>
-<p>This is the step most guides omit, and omitting it leaves a window that's measured in hours.</p>
-<p>Blocking sign-in prevents the account from acquiring a <em>new</em> token. It does nothing to the tokens already issued. An access token typically stays valid for around an hour, and a refresh token far longer than that. Someone with Outlook or Teams already open can keep reading mail after you've disabled their account, which tends to surprise people who assume the toggle is instant.</p>
+<p>Most guides skip this, and skipping it leaves a gap you can measure in hours.</p>
+<p>Blocking sign-in stops the account getting a <em>new</em> token. It does nothing about the ones already issued. Access tokens usually live around an hour and refresh tokens live far longer, which means someone with Outlook already open keeps reading mail after you've disabled them. People tend to assume that toggle is instant. It isn't.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Revoke-MgUserSignInSession</span> <span class="n">-UserId</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span>
 </code></pre></div>
-<p>This invalidates the refresh tokens so clients can't silently renew. It isn't uniformly immediate: workloads that support Continuous Access Evaluation — Exchange Online, SharePoint Online, Teams — react within a few minutes. Others wait out the remaining access token lifetime.</p>
-<p>Treat steps 1 and 2 as a single action. Doing either one alone is not offboarding.</p>
+<p>That invalidates the refresh tokens so clients can't quietly renew. It's still not uniform: Exchange Online, SharePoint Online and Teams support Continuous Access Evaluation and react within a few minutes, while everything else waits out whatever's left of the access token lifetime.</p>
+<p>Treat these first two steps as one action. Either alone isn't offboarding.</p>
 <h2 id="3-inventory-what-the-account-owns">3. Inventory what the account owns<a class="headerlink" href="#3-inventory-what-the-account-owns" title="Permanent link">&para;</a></h2>
-<p>Before anything is deleted, find out what depends on it. This is the step that separates a clean offboarding from one you'll be repairing later.</p>
+<p>This is where a clean offboarding diverges from one you'll spend a week repairing.</p>
 <p>Graph will tell you what the account directly owns:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Get-MgUserOwnedObject</span> <span class="n">-UserId</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">-All</span> <span class="p">|</span>
     <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span> <span class="nv">$_</span><span class="p">.</span><span class="n">AdditionalProperties</span><span class="p">[</span><span class="s1">&#39;displayName&#39;</span><span class="p">]</span> <span class="p">}</span>
@@ -716,60 +805,57 @@
 <span class="nb">Get-MgUserMemberOf</span> <span class="n">-UserId</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">-All</span> <span class="p">|</span>
     <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span> <span class="nv">$_</span><span class="p">.</span><span class="n">AdditionalProperties</span><span class="p">[</span><span class="s1">&#39;displayName&#39;</span><span class="p">]</span> <span class="p">}</span>
 </code></pre></div>
-<p>That covers groups, applications, and service principals. It does not cover everything, and the gaps are where the orphans live.</p>
-<p><strong>Automation.</strong> Power Automate flows owned solely by the departing user stop running once the account is gone. The connections belonged to that account and cannot be recovered — you rebuild them from scratch, assuming you can work out what they were connected to. The same applies to Power Apps, custom connectors, and connection references. Reassign these through the Power Platform admin center, or in bulk:</p>
+<p>That gets you groups, applications and service principals. It doesn't get you everything, and the gaps are exactly where the orphans live.</p>
+<p><strong>Automation.</strong> Any Power Automate flow whose only owner is the departing user stops running once the account goes. The connections belonged to that account and there's no recovering them, so you rebuild from scratch, assuming you can work out what they were connected to in the first place. Power Apps, custom connectors and connection references have the same problem. Reassign through the Power Platform admin center, or in bulk:</p>
 <div class="highlight"><pre><span></span><code><span class="c"># Microsoft.PowerApps.Administration.PowerShell</span>
 <span class="nb">Set-AdminFlowOwnerRole</span> <span class="n">-EnvironmentName</span> <span class="p">&lt;</span><span class="n">env</span><span class="p">&gt;</span> <span class="n">-FlowName</span> <span class="p">&lt;</span><span class="n">guid</span><span class="p">&gt;</span> <span class="p">`</span>
     <span class="n">-RoleName</span> <span class="n">CanEdit</span> <span class="n">-PrincipalObjectId</span> <span class="p">&lt;</span><span class="nb">new-owner</span><span class="n">-object-id</span><span class="p">&gt;</span> <span class="n">-PrincipalType</span> <span class="n">User</span>
 </code></pre></div>
-<p><strong>Groups and Teams.</strong> A Microsoft 365 Group or Team whose only owner is deleted becomes ownerless. Members keep working in it and nobody can administer it — no adding members, no changing settings, no deleting it. The same problem applies to distribution lists with a single manager and SharePoint sites with a single site collection administrator.</p>
-<p><strong>Azure and identity.</strong> RBAC role assignments where the departing user is the only principal with access to a resource group or subscription. App registrations and service principals listing them as sole owner. Privileged Identity Management assignments, including eligible ones that aren't currently active.</p>
-<p><strong>Calendar.</strong> Recurring meetings organized by the account lose their organizer. Attendees keep the series on their calendars and nobody can amend or cancel it.</p>
-<p><strong>Devices.</strong> Intune-enrolled and Entra-registered devices tied to the account.</p>
-<p>The practical point about all of this: adding a co-owner to a group takes ten seconds while the account exists. Doing it after deletion is a support exercise. Front-load the work.</p>
+<p><strong>Groups and Teams.</strong> A Microsoft 365 Group or Team with one owner becomes ownerless when that owner is deleted. Members carry on working in it quite happily and nobody can administer it: no adding members, no settings changes, no deleting it. Distribution lists with a single manager and SharePoint sites with a single site collection admin fail the same way.</p>
+<p><strong>Azure and identity.</strong> RBAC assignments where the departing user is the only principal with access to a resource group. App registrations and service principals listing them as sole owner. PIM assignments, including eligible ones that aren't currently active and are therefore easy to miss.</p>
+<p><strong>Calendar.</strong> Recurring meetings they organized lose their organizer. Attendees keep the series and nobody can change or cancel it.</p>
+<p><strong>Devices.</strong> Anything Intune-enrolled or Entra-registered under that account.</p>
+<p>One practical note on all of this. Adding a co-owner to a group takes about ten seconds while the account exists. Doing the same thing after deletion is a support ticket. Front-load the work.</p>
 <h2 id="4-preserve-mailbox-and-onedrive-content">4. Preserve mailbox and OneDrive content<a class="headerlink" href="#4-preserve-mailbox-and-onedrive-content" title="Permanent link">&para;</a></h2>
-<p>Both are deleted with the account. Both need a decision before that happens.</p>
-<p><strong>Mailbox.</strong> Converting to a shared mailbox is usually the right call. The content is preserved, no license is required while it stays under 50 GB, and colleagues can be granted access to handle anything still arriving.</p>
+<p>Both go with the account, so both need a decision first.</p>
+<p><strong>Mailbox.</strong> Converting to a shared mailbox is usually right: content survives, no license needed under 50 GB, and colleagues can be given access to handle whatever's still arriving.</p>
 <div class="highlight"><pre><span></span><code><span class="c"># Exchange Online PowerShell</span>
 <span class="nb">Set-Mailbox</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">-Type</span> <span class="n">Shared</span>
 </code></pre></div>
-<p>If there's a legal or compliance requirement, a litigation hold or retention policy is the better instrument. If the content needs to leave the tenant entirely, export to PST before you touch anything else.</p>
-<p><strong>OneDrive.</strong> Assign a secondary owner while the account still exists:</p>
+<p>If there's a legal or compliance angle, use a litigation hold or retention policy instead. If the content has to leave the tenant, export to PST before touching anything else.</p>
+<p><strong>OneDrive.</strong> Assign a secondary owner while the account is still there:</p>
 <div class="highlight"><pre><span></span><code><span class="c"># SharePoint Online PowerShell</span>
 <span class="nb">Set-SPOSite</span> <span class="n">-Identity</span> <span class="n">https</span><span class="p">://</span><span class="n">contoso-my</span><span class="p">.</span><span class="n">sharepoint</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">personal</span><span class="p">/</span><span class="n">jdoe_contoso_com</span> <span class="p">`</span>
     <span class="n">-Owner</span> <span class="n">manager</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span>
 </code></pre></div>
-<p>If you skip this, the OneDrive is retained for 30 days after the account is deleted — by default, since the retention period is configurable in the SharePoint admin center — and then it's gone. That window relies on someone remembering the content exists, which is not a control.</p>
+<p>Skip it and the OneDrive sits in a 30-day retention window after deletion, by default at least, since the period is configurable in the SharePoint admin center. Then it's gone. Relying on that window means relying on someone remembering the content exists, which isn't a control.</p>
 <h2 id="5-unassign-the-phone-number">5. Unassign the phone number<a class="headerlink" href="#5-unassign-the-phone-number" title="Permanent link">&para;</a></h2>
-<p>Relevant to anyone running Teams Phone, and skipped almost universally.</p>
-<p>Remove the phone number assignment and voice policies <strong>before</strong> removing the Teams Phone license:</p>
+<p>If you're running Teams Phone this matters, and almost nobody mentions it.</p>
+<p>Remove the number assignment and voice policies <strong>before</strong> you take the Teams Phone license away:</p>
 <div class="highlight"><pre><span></span><code><span class="c"># Microsoft Teams PowerShell</span>
 <span class="nb">Remove-CsPhoneNumberAssignment</span> <span class="n">-Identity</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">-RemoveAll</span>
 </code></pre></div>
-<p>Strip the license first and the number can remain associated with the account, which keeps it out of your available pool and makes reassignment more work than it should be. Doing it in this order costs nothing; doing it in the wrong order costs a support ticket.</p>
-<h2 id="6-remove-group-memberships-and-understand-your-licensing-model">6. Remove group memberships, and understand your licensing model<a class="headerlink" href="#6-remove-group-memberships-and-understand-your-licensing-model" title="Permanent link">&para;</a></h2>
-<p>How licenses come back depends on how they were assigned:</p>
-<ul>
-<li><strong>Direct-assigned licenses</strong> are released when the account is deleted.</li>
-<li><strong>Group-based licenses</strong> are released when the user leaves the licensing group. Delete the account without removing them from that group first and the numbers in the admin center become harder to reason about than they need to be.</li>
-</ul>
-<p>Dynamic groups resolve themselves once the underlying attributes change. Static groups need explicit removal.</p>
-<p>Also remove privileged role assignments here, including PIM eligible assignments, which persist independently of active ones.</p>
+<p>Do it the other way round and the number can stay stuck to the account, out of your available pool, and getting it back is more work than it should be. Doing it in the right order costs nothing.</p>
+<h2 id="6-remove-group-memberships-and-check-your-licensing-model">6. Remove group memberships and check your licensing model<a class="headerlink" href="#6-remove-group-memberships-and-check-your-licensing-model" title="Permanent link">&para;</a></h2>
+<p>How licenses come back depends entirely on how they went out.</p>
+<p>Direct-assigned licenses are released when you delete the account. Group-based licenses are released when the user leaves the licensing group — so if you delete the account first and leave them in the group, the numbers in the admin center get harder to reason about than they need to be.</p>
+<p>Dynamic groups sort themselves out once the underlying attributes change. Static groups need you to do it.</p>
+<p>Strip privileged role assignments here too, PIM eligible ones included.</p>
 <h2 id="7-delete-the-account">7. Delete the account<a class="headerlink" href="#7-delete-the-account" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nb">Remove-MgUser</span> <span class="n">-UserId</span> <span class="n">jdoe</span><span class="nv">@contoso</span><span class="p">.</span><span class="n">com</span>
 </code></pre></div>
-<p>This is a soft delete. The account sits in the Entra ID recycle bin for 30 days and is fully restorable during that period, which is your safety net if the inventory in step 3 turned out to be incomplete.</p>
+<p>That's a soft delete. The account sits in the Entra ID recycle bin for 30 days, fully restorable, which is your safety net if step 3 turned out to be incomplete.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Get-MgDirectoryDeletedItemAsUser</span> <span class="n">-All</span> <span class="p">|</span>
     <span class="nb">Select-Object</span> <span class="n">DisplayName</span><span class="p">,</span> <span class="n">UserPrincipalName</span><span class="p">,</span> <span class="n">DeletedDateTime</span>
 </code></pre></div>
-<p>Hard-delete only when you're certain, because it forecloses recovery entirely. There are legitimate reasons to do it — a stakeholder decision that no data is to be retained, for instance — but it should be a decision rather than a default, and it should be recorded as one.</p>
+<p>Hard-delete only when you're sure, because it closes off recovery entirely. There are good reasons to do it — a stakeholder deciding no data is to be retained, for one — but it should be a decision someone made and recorded, not a default you fell into.</p>
 <h2 id="8-verify-license-reclamation">8. Verify license reclamation<a class="headerlink" href="#8-verify-license-reclamation" title="Permanent link">&para;</a></h2>
-<p>Don't assume it worked. The license page in the admin center can lag, so confirm in PowerShell:</p>
+<p>Don't assume it worked. The admin center license page lags, so check in PowerShell:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Get-MgSubscribedSku</span> <span class="p">|</span>
     <span class="nb">Select-Object</span> <span class="n">SkuPartNumber</span><span class="p">,</span> <span class="n">ConsumedUnits</span><span class="p">,</span>
         <span class="p">@{</span> <span class="n">N</span> <span class="p">=</span> <span class="s1">&#39;Available&#39;</span><span class="p">;</span> <span class="n">E</span> <span class="p">=</span> <span class="p">{</span> <span class="nv">$_</span><span class="p">.</span><span class="n">PrepaidUnits</span><span class="p">.</span><span class="n">Enabled</span> <span class="p">-</span> <span class="nv">$_</span><span class="p">.</span><span class="n">ConsumedUnits</span> <span class="p">}</span> <span class="p">}</span>
 </code></pre></div>
-<p>If the consumed count hasn't moved, something is still holding the license — most often group-based assignment that wasn't removed in step 6.</p>
+<p>If the consumed count hasn't moved, something's still holding that license. Nine times out of ten it's group-based assignment you didn't remove in step 6.</p>
 <h2 id="the-full-checklist">The full checklist<a class="headerlink" href="#the-full-checklist" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>[ ] Sign-in blocked
 [ ] Sessions revoked
@@ -789,15 +875,19 @@
 [ ] License reclamation verified in PowerShell
 [ ] Offboarding recorded: date, authorizer, what was retained and where
 </code></pre></div>
-<h2 id="the-last-line-matters">The last line matters<a class="headerlink" href="#the-last-line-matters" title="Permanent link">&para;</a></h2>
-<p>Record the offboarding somewhere durable: the date, who authorized it, what was preserved, and where it went. Six months later, when somebody asks whether a departed employee's mailbox still exists, the answer needs to be a lookup rather than an investigation.</p>
-<p>None of the steps above are difficult in isolation. What makes offboarding go wrong is that it's usually done in a hurry, by whoever is available, on the day someone leaves — which is precisely when nobody has time to work out what the account owned. Writing the sequence down once, and following it every time, is the whole trick.</p>
+<h2 id="write-down-that-you-did-it">Write down that you did it<a class="headerlink" href="#write-down-that-you-did-it" title="Permanent link">&para;</a></h2>
+<p>Record the offboarding somewhere durable. The date, who authorized it, what was kept and where it went.</p>
+<p>Six months later someone will ask whether a departed employee's mailbox still exists. You want that to be a lookup, not an investigation.</p>
+<p>None of these steps is difficult on its own. Offboarding goes wrong because it happens in a hurry, on the day someone leaves, handled by whoever's free — which is precisely the moment nobody has time to work out what the account owned. Writing the sequence down once and following it every time is the whole trick.</p>
 
 
 
 
 
 
+
+  
+  
 
 
 
